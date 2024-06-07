@@ -1,106 +1,342 @@
-var iUp = (function () {
-	var t = 0,
-		d = 150,
-		clean = function () {
-			t = 0;
-		},
-		up = function (e) {
-			setTimeout(function () {
-				$(e).addClass("up")
-			}, t);
-			t += d;
-		},
-		down = function (e) {
-			$(e).removeClass("up");
-		},
-		toggle = function (e) {
-			setTimeout(function () {
-				$(e).toggleClass("up")
-			}, t);
-			t += d;
-		};
-	return {
-		clean: clean,
-		up: up,
-		down: down,
-		toggle: toggle
-	}
-})();
-
-$(document).ready(function () {
-
-	// 获取一言数据
-	fetch('https://v1.hitokoto.cn').then(function (res) {
-		return res.json();
-	}).then(function (e) {
-		$('#description').html(e.hitokoto + "<br/> -「<strong>" + e.from + "</strong>」")
-	}).catch(function (err) {
-		console.error(err);
-	})
-
-
-	// var url = 'https://query.yahooapis.com/v1/public/yql' + 
-	// '?q=' + encodeURIComponent('select * from json where url=@url') +
-	// '&url=' + encodeURIComponent('https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=8') +
-	// '&format=json&callback=?';
-
-	/**
-	 * 获取Bing壁纸
-	 * 原先 YQL 已经无法提供服务了
-	 * 改用 JsonBird：https://bird.ioliu.cn/
-	 * 
-	 */
-	var url = 'https://bird.ioliu.cn/v1/?url=https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=8';
-	var imgUrls = JSON.parse(sessionStorage.getItem("imgUrls"));
-	var index = sessionStorage.getItem("index");
-	var $panel = $('#panel');
-	if (imgUrls == null) {
-		imgUrls = new Array();
-		index = 0;
-		$.get(url, function (result) {
-			images = result.images;
-			for (let i = 0; i < images.length; i++) {
-				const item = images[i];
-				imgUrls.push(item.url);
-			}
-			var imgUrl = imgUrls[index];
-			var url = "https://www.bing.com" + imgUrl;
-			$panel.css("background", "url('" + url + "') center center no-repeat #666");
-			$panel.css("background-size", "cover");
-			sessionStorage.setItem("imgUrls", JSON.stringify(imgUrls));
-			sessionStorage.setItem("index", index);
-		});
-	} else {
-		if (index == 7)
-			index = 0;
-		else
-			index++;
-		var imgUrl = imgUrls[index];
-		var url = "https://www.bing.com" + imgUrl;
-		$panel.css("background", "url('" + url + "') center center no-repeat #666");
-		$panel.css("background-size", "cover");
-		sessionStorage.setItem("index", index);
-	}
-
-	$(".iUp").each(function (i, e) {
-		iUp.up(e);
-	});
-
-	$(".js-avatar")[0].onload = function () {
-		$(".js-avatar").addClass("show");
-	}
+//弹窗样式
+iziToast.settings({
+    timeout: 10000,
+    progressBar: false,
+    close: false,
+    closeOnEscape: true,
+    position: 'topCenter',
+    transitionIn: 'bounceInDown',
+    transitionOut: 'flipOutX',
+    displayMode: 'replace',
+    layout: '1',
+    backgroundColor: '#00000040',
+    titleColor: '#efefef',
+    messageColor: '#efefef',
+    iconColor: '#efefef',
 });
 
-$('.btn-mobile-menu__icon').click(function () {
-	if ($('.navigation-wrapper').css('display') == "block") {
-		$('.navigation-wrapper').on('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function () {
-			$('.navigation-wrapper').toggleClass('visible animated bounceOutUp');
-			$('.navigation-wrapper').off('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend');
-		});
-		$('.navigation-wrapper').toggleClass('animated bounceInDown animated bounceOutUp');
+//加载完成后执行
+window.addEventListener('load', function () {
 
-	} else {
-		$('.navigation-wrapper').toggleClass('visible animated bounceInDown');
-	}
-	$('.btn-mobile-menu__icon').toggleClass('social iconfont icon-list social iconfont icon-ngleup animated fadeIn');
+    //载入动画
+    $('#loading-box').attr('class', 'loaded');
+    $('#bg').css("cssText", "transform: scale(1);filter: blur(0px);transition: ease 1.5s;");
+    $('.cover').css("cssText", "opacity: 1;transition: ease 1.5s;");
+    $('#section').css("cssText", "transform: scale(1) !important;opacity: 1 !important;filter: blur(0px) !important");
+
+    //用户欢迎
+    setTimeout(function () {
+        iziToast.show({
+            timeout: 2500,
+            title: hello,
+            message: '欢迎来到我的主页'
+        });
+    }, 800);
+}, false)
+
+setTimeout(function () {
+    $('#loading-text').html("字体及文件加载可能需要一定时间")
+}, 3000);
+
+//延迟加载音乐播放器
+function downloadJSAtOnload() {
+    var element = document.createElement("script");
+    element.src = "./js/music.js";
+    document.body.appendChild(element);
+}
+if (window.addEventListener)
+    window.addEventListener("load", downloadJSAtOnload, false);
+else if (window.attachEvent)
+    window.attachEvent("onload", downloadJSAtOnload);
+else window.onload = downloadJSAtOnload;
+
+//新春灯笼 （ 需要时取消注释 ）
+/*
+new_element=document.createElement("link");
+new_element.setAttribute("rel","stylesheet");
+new_element.setAttribute("type","text/css");
+new_element.setAttribute("href","./css/lantern.css");
+document.body.appendChild(new_element);
+
+new_element=document.createElement("script");
+new_element.setAttribute("type","text/javascript");
+new_element.setAttribute("src","./js/lantern.js");
+document.body.appendChild(new_element);
+*/
+
+//火狐浏览器独立样式
+if (isFirefox = navigator.userAgent.indexOf("Firefox") > 0) {
+    var head = document.getElementsByTagName('head')[0];
+    var link = document.createElement('link');
+    link.href = './css/firefox.css';
+    link.rel = 'stylesheet';
+    link.type = 'text/css';
+    head.appendChild(link);
+    window.addEventListener('load', function () {
+        iziToast.show({
+            timeout: 8000,
+            iconUrl: './img/icon/warn.png',
+            message: '您正在使用火狐浏览器，部分功能可能不支持'
+        });
+    }, false)
+}
+
+//获取一言
+fetch('https://v1.hitokoto.cn?max_length=24')
+    .then(response => response.json())
+    .then(data => {
+        $('#hitokoto_text').html(data.hitokoto)
+        $('#from_text').html(data.from)
+    })
+    .catch(console.error)
+
+//获取天气
+//每日限量 100 次
+//请前往 https://www.tianqiapi.com/ 申请（免费）
+fetch('https://www.yiketianqi.com/free/day?appid=43986679&appsecret=TksqGZT7&unescape=1')
+    .then(response => response.json())
+    .then(data => {
+        $('#wea_text').html(data.wea)
+        $('#city_text').html(data.city)
+        $('#tem_night').html(data.tem_night)
+        $('#tem_day').html(data.tem_day)
+        // $('#win_text').html(data.win)
+        // $('#win_speed').html(data.win_speed)
+    })
+    .catch(console.error)
+
+//获取时间
+var t = null;
+t = setTimeout(time, 1000);
+
+function time() {
+    clearTimeout(t);
+    dt = new Date();
+    var y = dt.getYear() + 1900;
+    var mm = dt.getMonth() + 1;
+    var d = dt.getDate();
+    var weekday = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
+    var day = dt.getDay();
+    var h = dt.getHours();
+    var m = dt.getMinutes();
+    var s = dt.getSeconds();
+    if (h < 10) {
+        h = "0" + h;
+    }
+    if (m < 10) {
+        m = "0" + m;
+    }
+    if (s < 10) {
+        s = "0" + s;
+    }
+    //document.getElementById("time").innerHTML = y + "&nbsp;年&nbsp;" + mm + "&nbsp;月&nbsp;" + d + "&nbsp;日&nbsp;" + "<span class='weekday'>" + weekday[day] + "</span><br>" + "<span class='time-text'>" + h + ":" + m + ":" + s + "</span>";
+    $("#time").html(y + "&nbsp;年&nbsp;" + mm + "&nbsp;月&nbsp;" + d + "&nbsp;日&nbsp;" + "<span class='weekday'>" + weekday[day] + "</span><br>" + "<span class='time-text'>" + h + ":" + m + ":" + s + "</span>");
+    t = setTimeout(time, 1000);
+}
+
+//链接提示文字
+$("#social").mouseover(function () {
+    $("#social").css({
+        "background": "rgb(0 0 0 / 25%)",
+        'border-radius': '6px',
+        "backdrop-filter": "blur(5px)"
+    });
+    $("#link-text").css({
+        "display": "block",
+    });
+}).mouseout(function () {
+    $("#social").css({
+        "background": "none",
+        "border-radius": "6px",
+        "backdrop-filter": "none"
+    });
+    $("#link-text").css({
+        "display": "none"
+    });
 });
+
+$("#github").mouseover(function () {
+    $("#link-text").html("去 Github 看看");
+}).mouseout(function () {
+    $("#link-text").html("通过这里联系我");
+});
+$("#qq").mouseover(function () {
+    $("#link-text").html("有什么事吗");
+}).mouseout(function () {
+    $("#link-text").html("通过这里联系我");
+});
+$("#email").mouseover(function () {
+    $("#link-text").html("来封 Email");
+}).mouseout(function () {
+    $("#link-text").html("通过这里联系我");
+});
+$("#telegram").mouseover(function () {
+    $("#link-text").html("你懂的 ~");
+}).mouseout(function () {
+    $("#link-text").html("通过这里联系我");
+});
+$("#twitter").mouseover(function () {
+    $("#link-text").html("你懂的 ~");
+}).mouseout(function () {
+    $("#link-text").html("通过这里联系我");
+});
+
+//更多页面切换
+var shoemore = false;
+$('#switchmore').on('click', function () {
+    shoemore = !shoemore;
+    if (shoemore && $(document).width() >= 990) {
+        $('#container').attr('class', 'container mores');
+        $("#change").html("Oops&nbsp;!");
+        $("#change1").html("哎呀，这都被你发现了（ 再点击一次可关闭 ）");
+    } else {
+        $('#container').attr('class', 'container');
+        $("#change").html("Hello&nbsp;World&nbsp;!");
+        $("#change1").html("一个建立于 21 世纪的小站，存活于互联网的边缘");
+    }
+});
+
+//更多页面关闭按钮
+$('#close').on('click', function () {
+    $('#switchmore').click();
+});
+
+//移动端菜单栏切换
+var switchmenu = false;
+$('#switchmenu').on('click', function () {
+    switchmenu = !switchmenu;
+    if (switchmenu) {
+        $('#row').attr('class', 'row menus');
+        $("#menu").html("<i class='iconfont icon-times'></i>");
+    } else {
+        $('#row').attr('class', 'row');
+        $("#menu").html("<i class='iconfont icon-bars'>");
+    }
+});
+
+//更多弹窗页面
+$('#openmore').on('click', function () {
+    $('#box').css("display", "block");
+    $('#row').css("display", "none");
+    $('#more').css("cssText", "display:none !important");
+});
+$('#closemore').on('click', function () {
+    $('#box').css("display", "none");
+    $('#row').css("display", "flex");
+    $('#more').css("display", "flex");
+});
+
+//监听网页宽度
+window.addEventListener('load', function () {
+    window.addEventListener('resize', function () {
+        //关闭移动端样式
+        if (window.innerWidth >= 600) {
+            $('#row').attr('class', 'row');
+            $("#menu").html("<i class='iconfont icon-bars'>");
+            //移除移动端切换功能区
+            $('#rightone').attr('class', 'row rightone');
+        }
+
+        if (window.innerWidth <= 990) {
+            //移动端隐藏更多页面
+            $('#container').attr('class', 'container');
+            $("#change").html("Hello&nbsp;World&nbsp;!");
+            $("#change1").html("一个建立于 21 世纪的小站，存活于互联网的边缘");
+
+            //移动端隐藏弹窗页面
+            $('#box').css("display", "none");
+            $('#row').css("display", "flex");
+            $('#more').css("display", "flex");
+        }
+    })
+})
+
+//移动端切换功能区
+var changemore = false;
+$('#changemore').on('click', function () {
+    changemore = !changemore;
+    if (changemore) {
+        $('#rightone').attr('class', 'row menus mobile');
+    } else {
+        $('#rightone').attr('class', 'row menus');
+    }
+});
+
+//更多页面显示关闭按钮
+$("#more").hover(function () {
+    $('#close').css("display", "block");
+}, function () {
+    $('#close').css("display", "none");
+})
+
+//屏蔽右键
+document.oncontextmenu = function () {
+    iziToast.show({
+        timeout: 2000,
+        iconUrl: './img/icon/warn.png',
+        message: '为了浏览体验，本站禁用右键'
+    });
+    return false;
+}
+
+//自动变灰
+var myDate = new Date;
+var mon = myDate.getMonth() + 1;
+var date = myDate.getDate();
+var days = ['4.4', '5.12', '7.7', '9.9', '9.18', '12.13'];
+for (var day of days) {
+    var d = day.split('.');
+    if (mon == d[0] && date == d[1]) {
+        document.write(
+            '<style>html{-webkit-filter:grayscale(100%);-moz-filter:grayscale(100%);-ms-filter:grayscale(100%);-o-filter:grayscale(100%);filter:progid:DXImageTransform.Microsoft.BasicImage(grayscale=1);_filter:none}</style>'
+        )
+        $("#change").html("Silence&nbsp;in&nbsp;silence");
+        $("#change1").html("今天是中国国家纪念日，全站已切换为黑白模式");
+        window.addEventListener('load', function () {
+            iziToast.show({
+                timeout: 14000,
+                iconUrl: './img/icon/candle.png',
+                message: '今天是中国国家纪念日'
+            });
+        }, false);
+    }
+}
+
+//控制台输出
+var styleTitle1 = `
+font-size: 20px;
+font-weight: 600;
+color: rgb(244,167,89);
+`
+var styleTitle2 = `
+font-size:12px;
+color: rgb(244,167,89);
+`
+var styleContent = `
+color: rgb(30,152,255);
+`
+var title1 = '無名の主页'
+var title2 = `
+ _____ __  __  _______     ____     __
+|_   _|  \\/  |/ ____\\ \\   / /\\ \\   / /
+  | | | \\  / | (___  \\ \\_/ /  \\ \\_/ / 
+  | | | |\\/| |\\___ \\  \\   /    \\   /  
+ _| |_| |  | |____) |  | |      | |   
+|_____|_|  |_|_____/   |_|      |_|                                                     
+`
+var content = `
+版 本 号：2.2
+更新日期：2022-04-12
+
+更新说明：
+1. 新增 壁纸个性化设置
+2. 新增 音乐播放器支持音量控制
+3. 优化 部分动画及细节
+4. 优化 页面加载缓慢
+5. 优化 音乐延迟加载
+
+主页:  https://www.imsyy.top
+Github:  https://github.com/imsyy/home
+`
+console.log(`%c${title1} %c${title2}
+%c${content}`, styleTitle1, styleTitle2, styleContent)
